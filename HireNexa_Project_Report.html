@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HireNexa Project Report</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; line-height: 1.6; color: #333; max-width: 800px; margin: 0 auto; padding: 40px; }
+        h1, h2, h3 { color: #2c3e50; }
+        h1 { border-bottom: 2px solid #3498db; padding-bottom: 10px; }
+        h2 { margin-top: 30px; border-bottom: 1px solid #eee; padding-bottom: 5px; }
+        ul { margin-bottom: 20px; }
+        li { margin-bottom: 8px; }
+        .footer { margin-top: 50px; font-size: 0.9em; color: #7f8c8d; text-align: center; border-top: 1px solid #eee; padding-top: 20px; }
+    </style>
+</head>
+<body>
+
+    <h1>HireNexa - Job Portal Project Report</h1>
+
+    <h2>1. Project Overview</h2>
+    <p><strong>Project Name:</strong> HireNexa</p>
+    <p><strong>Purpose:</strong> A modern, comprehensive job portal application designed to connect job seekers with employers efficiently. This platform aims to streamline the recruitment process by providing an intuitive interface for both candidates and administrators.</p>
+
+    <h2>2. Technology Stack</h2>
+    <ul>
+        <li><strong>Frontend:</strong> React.js (Vite), HTML5, CSS3</li>
+        <li><strong>Backend:</strong> Java Spring Boot</li>
+        <li><strong>Database:</strong> PostgreSQL (with Spring Data JPA)</li>
+        <li><strong>Build Tools:</strong> Maven (Backend), npm (Frontend)</li>
+    </ul>
+
+    <h2>3. Key Features & Modules</h2>
+    <h3>For Users (Job Seekers)</h3>
+    <ul>
+        <li><strong>Job Search & Filtering:</strong> Users can browse and filter jobs based on categories, location, and requirements.</li>
+        <li><strong>Responsive UI:</strong> Modern, dynamic user interface optimized for all devices (desktops, tablets, and smartphones).</li>
+    </ul>
+
+    <h3>For Administrators (Admin Portal & CMS)</h3>
+    <ul>
+        <li><strong>Admin Dashboard:</strong> Centralized control for managing jobs and user statistics.</li>
+        <li><strong>Content Management System (CMS):</strong> Dedicated portal to update content dynamically.</li>
+    </ul>
+
+    <h2>4. Architecture</h2>
+    <p>The system follows a standard Client-Server architectural pattern:</p>
+    <ul>
+        <li><strong>Client Layer:</strong> The React frontend handles user interactions and renders the dynamic interface.</li>
+        <li><strong>API Layer:</strong> The Spring Boot backend exposes RESTful APIs to serve data securely to the frontend.</li>
+        <li><strong>Data Layer:</strong> PostgreSQL acts as the persistent relational database, storing structured data such as users and job postings.</li>
+    </ul>
+
+    <h2>5. Setup & Installation Guide</h2>
+    <h3>Backend Setup (Java)</h3>
+    <ol>
+        <li>Navigate to the <code>backend</code> directory.</li>
+        <li>Run <code>mvn clean spring-boot:run</code> to start the REST API on port <code>8080</code>.</li>
+    </ol>
+
+    <h3>Frontend Setup (React)</h3>
+    <ol>
+        <li>Navigate to the root directory.</li>
+        <li>Run <code>npm install</code> to install the required Node modules.</li>
+        <li>Run <code>npm run dev</code> to start the React application on port <code>5173</code>.</li>
+    </ol>
+
+    <h2>6. Conclusion</h2>
+    <p>HireNexa is a full-stack, production-ready web application built with modern web technologies. It is designed to demonstrate proficiency in both frontend and backend software development practices, highlighting clean architecture, component reusability, and robust API integration.</p>
+
+    <div class="footer">
+        Generated for educational presentation purposes.
+    </div>
+
+</body>
+</html>
