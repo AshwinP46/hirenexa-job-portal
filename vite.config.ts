@@ -17,7 +17,7 @@ export default defineConfig(({ mode }) => {
       tanstackStart({
         server: {
           entry: "server",
-          preset: "static",
+          preset: "vercel",
         },
       }),
       react(),
