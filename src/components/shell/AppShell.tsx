@@ -53,86 +53,88 @@ export function AppShell({ sidebar, user, children }: Props) {
       {sidebar}
       <div className="flex-1 flex flex-col min-w-0">
         <header className="sticky top-0 z-20 border-b border-border bg-background/70 backdrop-blur-xl">
-          <div className="flex h-16 items-center gap-4 px-4 md:px-8">
-            <div className="relative flex-1 max-w-md">
+          <div className="flex h-16 items-center justify-between gap-2 px-3 md:px-8">
+            <div className="hidden sm:flex relative flex-1 max-w-md">
               <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
               <input
                 placeholder="Search..."
                 className="w-full rounded-xl border border-border bg-card/60 py-2 pl-10 pr-3 text-sm placeholder:text-muted-foreground outline-none focus:border-primary focus:ring-2 focus:ring-primary/20"
               />
             </div>
-            <button
-              onClick={() => setDark(!dark)}
-              className="rounded-xl border border-border bg-card p-2 hover:bg-accent/40 transition"
-              aria-label="Toggle theme"
-            >
-              {dark ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
-            </button>
-            <div className="relative">
+            <div className="flex items-center gap-2 ml-auto">
               <button
-                onClick={() => setOpenNotif((v) => !v)}
-                className="relative rounded-xl border border-border bg-card p-2 hover:bg-accent/40 transition"
-                aria-label="Notifications"
+                onClick={() => setDark(!dark)}
+                className="rounded-xl border border-border bg-card p-2 hover:bg-accent/40 transition"
+                aria-label="Toggle theme"
               >
-                <Bell className="h-4 w-4" />
-                {unread > 0 && (
-                  <span className="absolute -right-1 -top-1 min-w-[18px] h-[18px] px-1 rounded-full bg-destructive text-[10px] font-bold text-white ring-2 ring-background flex items-center justify-center">
-                    {unread}
-                  </span>
-                )}
+                {dark ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
               </button>
-              {openNotif && (
-                <>
-                  <div className="fixed inset-0 z-30" onClick={() => setOpenNotif(false)} />
-                  <div className="absolute right-0 mt-2 w-80 rounded-2xl border border-border bg-card shadow-glow z-40 overflow-hidden">
-                    <div className="flex items-center justify-between p-3 border-b border-border">
-                      <p className="text-sm font-semibold">Notifications</p>
-                      {unread > 0 && (
-                        <button onClick={handleMarkAll} className="text-[11px] text-primary font-medium hover:underline">
-                          Mark all read
-                        </button>
-                      )}
-                    </div>
-                    <div className="max-h-80 overflow-y-auto">
-                      {notifs.length === 0 ? (
-                        <div className="p-6 text-center text-xs text-muted-foreground">No notifications yet</div>
-                      ) : notifs.map((n) => (
-                        <button key={n.id} onClick={() => handleMarkOne(n.id)}
-                          className={`w-full text-left p-3 border-b border-border last:border-0 hover:bg-accent/30 transition ${!n.is_read ? "bg-primary/5" : ""}`}>
-                          <div className="flex items-start gap-2">
-                            {!n.is_read && <span className="mt-1.5 h-1.5 w-1.5 rounded-full bg-primary shrink-0" />}
-                            <div className="flex-1 min-w-0">
-                              <p className="text-xs font-semibold truncate">{n.title}</p>
-                              <p className="text-[11px] text-muted-foreground line-clamp-2">{n.message}</p>
-                              <p className="text-[10px] text-muted-foreground mt-1">
-                                {(() => { try { return formatDistanceToNow(new Date(n.created_at), { addSuffix: true }); } catch { return ""; } })()}
-                              </p>
+              <div className="relative">
+                <button
+                  onClick={() => setOpenNotif((v) => !v)}
+                  className="relative rounded-xl border border-border bg-card p-2 hover:bg-accent/40 transition"
+                  aria-label="Notifications"
+                >
+                  <Bell className="h-4 w-4" />
+                  {unread > 0 && (
+                    <span className="absolute -right-1 -top-1 min-w-[18px] h-[18px] px-1 rounded-full bg-destructive text-[10px] font-bold text-white ring-2 ring-background flex items-center justify-center">
+                      {unread}
+                    </span>
+                  )}
+                </button>
+                {openNotif && (
+                  <>
+                    <div className="fixed inset-0 z-30" onClick={() => setOpenNotif(false)} />
+                    <div className="absolute right-0 mt-2 w-80 rounded-2xl border border-border bg-card shadow-glow z-40 overflow-hidden">
+                      <div className="flex items-center justify-between p-3 border-b border-border">
+                        <p className="text-sm font-semibold">Notifications</p>
+                        {unread > 0 && (
+                          <button onClick={handleMarkAll} className="text-[11px] text-primary font-medium hover:underline">
+                            Mark all read
+                          </button>
+                        )}
+                      </div>
+                      <div className="max-h-80 overflow-y-auto">
+                        {notifs.length === 0 ? (
+                          <div className="p-6 text-center text-xs text-muted-foreground">No notifications yet</div>
+                        ) : notifs.map((n) => (
+                          <button key={n.id} onClick={() => handleMarkOne(n.id)}
+                            className={`w-full text-left p-3 border-b border-border last:border-0 hover:bg-accent/30 transition ${!n.is_read ? "bg-primary/5" : ""}`}>
+                            <div className="flex items-start gap-2">
+                              {!n.is_read && <span className="mt-1.5 h-1.5 w-1.5 rounded-full bg-primary shrink-0" />}
+                              <div className="flex-1 min-w-0">
+                                <p className="text-xs font-semibold truncate">{n.title}</p>
+                                <p className="text-[11px] text-muted-foreground line-clamp-2">{n.message}</p>
+                                <p className="text-[10px] text-muted-foreground mt-1">
+                                  {(() => { try { return formatDistanceToNow(new Date(n.created_at), { addSuffix: true }); } catch { return ""; } })()}
+                                </p>
+                              </div>
+                              {n.is_read && <Check className="h-3 w-3 text-muted-foreground" />}
                             </div>
-                            {n.is_read && <Check className="h-3 w-3 text-muted-foreground" />}
-                          </div>
-                        </button>
-                      ))}
+                          </button>
+                        ))}
+                      </div>
                     </div>
-                  </div>
-                </>
-              )}
-            </div>
-            <div className="flex items-center gap-3 rounded-xl border border-border bg-card pl-2 pr-3 py-1.5">
-              {user.avatarUrl ? (
-                <img src={user.avatarUrl} alt={user.name} className="h-7 w-7 rounded-full object-cover border border-border shrink-0" />
-              ) : (
-                <div className="h-7 w-7 rounded-full gradient-primary flex items-center justify-center text-xs font-bold text-primary-foreground shrink-0">
-                  {user.initials}
-                </div>
-              )}
-              <div className="hidden md:block">
-                <p className="text-xs font-semibold leading-tight">{user.name}</p>
-                <p className="text-[10px] text-muted-foreground leading-tight">{user.role}</p>
+                  </>
+                )}
               </div>
+              <div className="flex items-center gap-3 rounded-xl border border-border bg-card pl-2 pr-3 py-1.5">
+                {user.avatarUrl ? (
+                  <img src={user.avatarUrl} alt={user.name} className="h-7 w-7 rounded-full object-cover border border-border shrink-0" />
+                ) : (
+                  <div className="h-7 w-7 rounded-full gradient-primary flex items-center justify-center text-xs font-bold text-primary-foreground shrink-0">
+                    {user.initials}
+                  </div>
+                )}
+                <div className="hidden md:block">
+                  <p className="text-xs font-semibold leading-tight">{user.name}</p>
+                  <p className="text-[10px] text-muted-foreground leading-tight">{user.role}</p>
+                </div>
+              </div>
+              <button onClick={signOut} className="rounded-xl border border-border bg-card p-2 hover:bg-accent/40 transition" title="Sign out">
+                <LogOut className="h-4 w-4" />
+              </button>
             </div>
-            <button onClick={signOut} className="rounded-xl border border-border bg-card p-2 hover:bg-accent/40 transition" title="Sign out">
-              <LogOut className="h-4 w-4" />
-            </button>
           </div>
         </header>
         <main className="flex-1 p-4 md:p-8 space-y-6">{children}</main>
