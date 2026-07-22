@@ -155,7 +155,7 @@ function AuthPage() {
           />
         </div>
       ) : (
-        <div className="hidden lg:block w-[38vw] max-w-[48vw] bg-[#f8fafc] overflow-hidden shrink-0 min-h-screen self-stretch">
+        <div className="hidden lg:block w-[56.25vh] max-w-[48vw] bg-[#f8fafc] overflow-hidden shrink-0 min-h-screen self-stretch">
           <img 
             src="/login-banner.png" 
             alt="HireNexa - University Recruitment Reimagined" 
