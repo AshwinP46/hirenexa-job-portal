@@ -16,15 +16,17 @@ if (!jsFile || !cssFile) {
 const html = `<!DOCTYPE html>
 <html lang="en">
   <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>HireNexa — Modern Job Portal & Placement Platform</title>
-    <meta name="description" content="HireNexa connects students with top recruiters. Find jobs, track applications, and manage placements — all in one modern platform." />
+    <meta charSet="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>HireNexa – Smart Campus Recruitment</title>
+    <meta name="description" content="Next-generation campus recruitment platform for students, recruiters, and admins with smart hiring and placement analytics." />
     <link rel="icon" type="image/x-icon" href="/favicon.ico" />
     <link rel="stylesheet" crossorigin href="/assets/${cssFile}" />
+    <script>
+      window.__TSR__ = window.__TSR__ || { manifest: { routes: {} } };
+    </script>
   </head>
   <body>
-    <div id="root"></div>
     <script type="module" crossorigin src="/assets/${jsFile}"></script>
   </body>
 </html>`;
