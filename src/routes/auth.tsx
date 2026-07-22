@@ -145,14 +145,24 @@ function AuthPage() {
         </div>
       )}
 
-      {/* Left side banner - visible on desktop, aspect ratio fit to image */}
-      <div className="hidden lg:block h-screen aspect-[9/16] max-w-[48vw] bg-[#f8fafc] overflow-hidden shrink-0 sticky top-0">
-        <img 
-          src="/login-banner.png" 
-          alt="HireNexa - University Recruitment Reimagined" 
-          className="w-full h-full object-contain"
-        />
-      </div>
+      {/* Left side banner - visible on desktop */}
+      {mode === "login" ? (
+        <div className="hidden lg:block h-screen aspect-[9/16] max-w-[48vw] bg-[#f8fafc] overflow-hidden shrink-0 sticky top-0">
+          <img 
+            src="/login-banner.png" 
+            alt="HireNexa - University Recruitment Reimagined" 
+            className="w-full h-full object-contain"
+          />
+        </div>
+      ) : (
+        <div className="hidden lg:block w-[38vw] max-w-[48vw] bg-[#f8fafc] overflow-hidden shrink-0 min-h-screen self-stretch">
+          <img 
+            src="/login-banner.png" 
+            alt="HireNexa - University Recruitment Reimagined" 
+            className="w-full h-full object-cover object-left"
+          />
+        </div>
+      )}
 
       {/* Right side form container */}
       <div 
