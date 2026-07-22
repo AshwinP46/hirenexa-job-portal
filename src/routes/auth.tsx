@@ -146,11 +146,11 @@ function AuthPage() {
       )}
 
       {/* Left side banner - visible on desktop, aspect ratio fit to image */}
-      <div className="hidden lg:block h-screen aspect-[9/16] max-w-[48vw] bg-[#f8fafc] overflow-hidden shrink-0 sticky top-0">
+      <div className="hidden lg:block h-screen w-[38vw] max-w-[48vw] bg-[#f8fafc] overflow-hidden shrink-0 sticky top-0">
         <img 
           src="/login-banner.png" 
           alt="HireNexa - University Recruitment Reimagined" 
-          className="w-full h-full object-contain"
+          className="w-full h-full object-cover object-left"
         />
       </div>
 
