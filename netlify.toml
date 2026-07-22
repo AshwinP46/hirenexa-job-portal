@@ -1,0 +1,13 @@
+[build]
+  command = "npm run build"
+  publish = ".netlify/static"
+
+[build.environment]
+  NODE_VERSION = "20"
+  VITE_SUPABASE_URL = "https://tvwntkdzosfbgjjhpxrb.supabase.co"
+  VITE_SUPABASE_PUBLISHABLE_KEY = "sb_publishable_QdTrcaDXnwVPu0MN_Y1QGQ_nhshIpWM"
+
+[[redirects]]
+  from = "/*"
+  to = "/.netlify/functions/server"
+  status = 200
