@@ -155,11 +155,10 @@ function AuthPage() {
       </div>
 
       {/* Right side form container */}
-      <div className="flex-1 flex items-center justify-center p-6 md:p-12 relative bg-background">
-        {/* Ambient background blobs for form side */}
-        <div className="pointer-events-none absolute -top-32 -right-32 h-96 w-96 rounded-full bg-primary/10 blur-3xl" />
-        <div className="pointer-events-none absolute -bottom-32 -left-32 h-96 w-96 rounded-full bg-accent/10 blur-3xl" />
-
+      <div 
+        className="flex-1 flex items-center justify-center p-6 md:p-12 relative bg-cover bg-center"
+        style={{ backgroundImage: `url('/bg-glass.png')` }}
+      >
         <div className="w-full max-w-md space-y-6 relative">
           <Link to="/" className="block">
             <div className="flex items-center justify-center gap-2">
