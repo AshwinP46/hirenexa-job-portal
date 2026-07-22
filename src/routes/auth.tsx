@@ -146,7 +146,7 @@ function AuthPage() {
       )}
 
       {/* Left side banner - visible on desktop, aspect ratio fit to image */}
-      <div className="hidden lg:block h-screen aspect-[9/16] max-w-[48vw] bg-[#f8fafc] overflow-hidden shrink-0">
+      <div className="hidden lg:block h-screen aspect-[9/16] max-w-[48vw] bg-[#f8fafc] overflow-hidden shrink-0 sticky top-0">
         <img 
           src="/login-banner.png" 
           alt="HireNexa - University Recruitment Reimagined" 
@@ -156,7 +156,7 @@ function AuthPage() {
 
       {/* Right side form container */}
       <div 
-        className="flex-1 flex items-center justify-center p-6 md:p-12 relative bg-cover bg-center"
+        className="flex-1 min-h-screen flex items-center justify-center p-6 md:p-12 relative bg-cover bg-center overflow-y-auto"
         style={{ backgroundImage: `url('/bg-glass.png')` }}
       >
         <div className="w-full max-w-md space-y-6 relative">
