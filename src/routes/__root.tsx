@@ -4,13 +4,9 @@ import {
   Link,
   createRootRouteWithContext,
   useRouter,
-  HeadContent,
-  Scripts,
 } from "@tanstack/react-router";
-import { useEffect, type ReactNode } from "react";
+import { useEffect } from "react";
 import { Toaster } from "@/components/ui/sonner";
-
-import appCss from "../styles.css?url";
 import { reportError } from "../lib/error-reporting";
 
 function NotFoundComponent() {
@@ -73,98 +69,16 @@ function ErrorComponent({ error, reset }: { error: Error; reset: () => void }) {
 }
 
 export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()({
-  head: () => ({
-    meta: [
-      { charSet: "utf-8" },
-      { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "HireNexa – Smart Campus Recruitment" },
-      {
-        name: "description",
-        content:
-          "Next-generation campus recruitment platform for students, recruiters, and admins with smart hiring and placement analytics.",
-      },
-      { property: "og:title", content: "HireNexa – Smart Campus Recruitment" },
-      {
-        property: "og:description",
-        content:
-          "Next-generation campus recruitment platform for students, recruiters, and admins with smart hiring and placement analytics.",
-      },
-      { property: "og:type", content: "website" },
-      { property: "og:image", content: "/og-image.png" },
-      { property: "og:image:width", content: "1200" },
-      { property: "og:image:height", content: "630" },
-      { name: "twitter:card", content: "summary_large_image" },
-      { name: "twitter:title", content: "HireNexa – Smart Campus Recruitment" },
-      {
-        name: "twitter:description",
-        content:
-          "Next-generation campus recruitment platform for students, recruiters, and admins with smart hiring and placement analytics.",
-      },
-      { name: "twitter:image", content: "/og-image.png" },
-    ],
-    links: [
-      {
-        rel: "stylesheet",
-        href: appCss,
-      },
-      {
-        rel: "icon",
-        type: "image/x-icon",
-        href: "/favicon.ico",
-      },
-      {
-        rel: "shortcut icon",
-        href: "/favicon.ico",
-      },
-      {
-        rel: "apple-touch-icon",
-        href: "/apple-touch-icon.png",
-      },
-      {
-        rel: "manifest",
-        href: "/manifest.json",
-      },
-    ],
-  }),
-  shellComponent: RootShell,
   component: RootComponent,
   notFoundComponent: NotFoundComponent,
   errorComponent: ErrorComponent,
 });
-
-function RootShell({ children }: { children: ReactNode }) {
-  return (
-    <html lang="en">
-      <head>
-        <HeadContent />
-        <script dangerouslySetInnerHTML={{ __html: `
-          (function() {
-            try {
-              var stored = localStorage.getItem('theme');
-              var supportDark = stored === 'dark' || (!stored && window.matchMedia('(prefers-color-scheme: dark)').matches);
-              if (supportDark) {
-                document.documentElement.classList.add('dark');
-              } else {
-                document.documentElement.classList.remove('dark');
-              }
-            } catch (e) {}
-          })();
-        ` }} />
-      </head>
-      <body>
-        {children}
-        <Scripts />
-      </body>
-    </html>
-  );
-}
 
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
 
   return (
     <QueryClientProvider client={queryClient}>
-      {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
       <Outlet />
       <Toaster richColors position="top-right" />
     </QueryClientProvider>
