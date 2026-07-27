@@ -244,8 +244,9 @@ export async function uploadAvatar(userId: string, file: File) {
 }
 
 export async function getResumeSignedUrl(path: string | null | undefined): Promise<string | null> {
-  if (!path) {
-    return "https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf";
+  const fallbackUrl = "/sample-ats-resume.pdf";
+  if (!path || path.includes("dummy.pdf")) {
+    return fallbackUrl;
   }
   if (path.startsWith("http://") || path.startsWith("https://")) {
     return path;
@@ -262,7 +263,7 @@ export async function getResumeSignedUrl(path: string | null | undefined): Promi
   } catch (e) {
     // fallback
   }
-  return "https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf";
+  return fallbackUrl;
 }
 
 // ---------------- Saved jobs ----------------
