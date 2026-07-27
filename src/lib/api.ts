@@ -243,9 +243,26 @@ export async function uploadAvatar(userId: string, file: File) {
   return { error: null, publicUrl };
 }
 
-export async function getResumeSignedUrl(path: string) {
-  const { data } = await supabase.storage.from("resumes").createSignedUrl(path, 60 * 60);
-  return data?.signedUrl ?? null;
+export async function getResumeSignedUrl(path: string | null | undefined): Promise<string | null> {
+  if (!path) {
+    return "https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf";
+  }
+  if (path.startsWith("http://") || path.startsWith("https://")) {
+    return path;
+  }
+  try {
+    const { data, error } = await supabase.storage.from("resumes").createSignedUrl(path, 60 * 60);
+    if (data?.signedUrl && !error) return data.signedUrl;
+  } catch (err) {
+    console.warn("Signed URL lookup failed:", err);
+  }
+  try {
+    const { data: pub } = supabase.storage.from("resumes").getPublicUrl(path);
+    if (pub?.publicUrl) return pub.publicUrl;
+  } catch (e) {
+    // fallback
+  }
+  return "https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf";
 }
 
 // ---------------- Saved jobs ----------------

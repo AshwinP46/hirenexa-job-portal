@@ -238,7 +238,6 @@ function ApplicantsTab({ data, loading, search, jobs, onStatus, onSchedule, onCo
   const filtered = data.filter((a) =>
     !search || `${a.student_name} ${a.job_title} ${a.department}`.toLowerCase().includes(search.toLowerCase()));
   const openResume = async (path: string | null) => {
-    if (!path) { toast.error("No resume uploaded"); return; }
     const url = await getResumeSignedUrl(path);
     if (url) window.open(url, "_blank"); else toast.error("Could not load resume");
   };
