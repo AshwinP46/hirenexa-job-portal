@@ -248,20 +248,16 @@ export async function getResumeSignedUrl(path: string | null | undefined): Promi
   if (!path || path.includes("dummy.pdf")) {
     return fallbackUrl;
   }
-  if (path.startsWith("http://") || path.startsWith("https://")) {
+  // Local public file (e.g. /sample-ats-resume.pdf) — return directly, never touch Supabase Storage
+  if (path.startsWith("/") || path.startsWith("http://") || path.startsWith("https://")) {
     return path;
   }
+  // Supabase Storage bucket path
   try {
     const { data, error } = await supabase.storage.from("resumes").createSignedUrl(path, 60 * 60);
     if (data?.signedUrl && !error) return data.signedUrl;
   } catch (err) {
     console.warn("Signed URL lookup failed:", err);
-  }
-  try {
-    const { data: pub } = supabase.storage.from("resumes").getPublicUrl(path);
-    if (pub?.publicUrl) return pub.publicUrl;
-  } catch (e) {
-    // fallback
   }
   return fallbackUrl;
 }
