@@ -46,6 +46,54 @@ function AuthPage() {
     }
   }, [loading, user, role, navigate]);
 
+  // --- Validation helpers ---
+  const BLOCKED_DOMAINS = [
+    "mailinator.com", "guerrillamail.com", "tempmail.com", "throwaway.email",
+    "yopmail.com", "trashmail.com", "sharklasers.com", "guerrillamailblock.com",
+    "grr.la", "discard.email", "maildrop.cc", "10minutemail.com", "temp-mail.org",
+    "fakeinbox.com", "getnada.com", "demo.com",
+  ];
+
+  const ALLOWED_PROVIDERS = [
+    "gmail.com", "yahoo.com", "outlook.com", "hotmail.com", "live.com",
+    "icloud.com", "protonmail.com", "proton.me", "rediffmail.com", "zoho.com",
+    "aol.com", "msn.com", "mail.com", "yandex.com", "tutanota.com",
+  ];
+
+  const isValidFullName = (n: string): boolean => {
+    const trimmed = n.trim();
+    if (trimmed.length < 3) return false;
+    const parts = trimmed.split(/\s+/).filter((p) => p.length >= 2);
+    if (parts.length < 2) return false;
+    // Only letters and spaces allowed
+    if (!/^[a-zA-Z\s.'-]+$/.test(trimmed)) return false;
+    return true;
+  };
+
+  const isValidEmail = (e: string): { valid: boolean; reason?: string } => {
+    const trimmed = e.trim().toLowerCase();
+    const domain = trimmed.split("@")[1];
+    if (!domain) return { valid: false, reason: "Enter a valid email address." };
+
+    // Block disposable/test domains
+    if (BLOCKED_DOMAINS.includes(domain)) {
+      return { valid: false, reason: "Disposable or test email addresses are not allowed. Use your official email." };
+    }
+
+    // Allow official/company/edu domains + known providers
+    const isKnownProvider = ALLOWED_PROVIDERS.includes(domain);
+    const isOrgDomain = domain.endsWith(".edu") || domain.endsWith(".ac.in") || domain.endsWith(".edu.in") || domain.endsWith(".org") || domain.endsWith(".co.in") || domain.endsWith(".in") || domain.endsWith(".com");
+
+    if (!isKnownProvider && !isOrgDomain) {
+      return { valid: false, reason: "Please use a valid official or personal email address." };
+    }
+
+    return { valid: true };
+  };
+
+  // Demo account emails (bypass validation for login only)
+  const DEMO_EMAILS = ["admin@demo.com", "recruiter@demo.com", "student@demo.com"];
+
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setSubmitting(true);
@@ -58,11 +106,32 @@ function AuthPage() {
       toast.error(authResult.error.message);
       return;
     }
+    // Check email verification (skip for demo accounts)
+    const user = authResult.data.user;
+    if (user && !user.email_confirmed_at && !DEMO_EMAILS.includes(email.trim().toLowerCase())) {
+      await supabase.auth.signOut();
+      toast.error("Please verify your email before signing in. Check your inbox for the confirmation link.");
+      return;
+    }
     toast.success("Welcome back!");
   };
 
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    // Validate full name
+    if (!isValidFullName(name)) {
+      toast.error("Please enter your full name (first and last name, letters only).");
+      return;
+    }
+
+    // Validate email
+    const emailCheck = isValidEmail(email);
+    if (!emailCheck.valid) {
+      toast.error(emailCheck.reason!);
+      return;
+    }
+
     if (password.length < 6) {
       toast.error("Password must be at least 6 characters.");
       return;
@@ -97,9 +166,10 @@ function AuthPage() {
       toast.error(authResult.error.message);
       return;
     }
-    toast.success("Account created. You can now sign in.");
+    toast.success("Account created! Please check your email to verify before signing in.", { duration: 6000 });
     setMode("login");
   };
+
 
   const handleGoogle = () => {
     toast.info("Google sign-in coming soon. Please use email login.");
