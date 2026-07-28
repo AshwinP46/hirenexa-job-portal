@@ -101,20 +101,8 @@ function AuthPage() {
     setMode("login");
   };
 
-  const handleGoogle = async () => {
-    setSubmitting(true);
-    const [authResult] = await Promise.all([
-      lovable.auth.signInWithOAuth("google", {
-        redirect_uri: window.location.origin + "/auth",
-      }),
-      new Promise((resolve) => setTimeout(resolve, 1000))
-    ]);
-    if (authResult.error) {
-      toast.error("Could not start Google sign-in. Please try again.");
-      setSubmitting(false);
-      return;
-    }
-    if (authResult.redirected) return;
+  const handleGoogle = () => {
+    toast.info("Google sign-in coming soon. Please use email login.");
   };
 
   const ROLES: { key: AppRole; label: string; icon: React.ComponentType<{ className?: string }>; tint: string }[] = [
