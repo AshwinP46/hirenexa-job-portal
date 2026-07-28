@@ -1,6 +1,6 @@
 import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
-import { Briefcase, GraduationCap, Building2, Loader2, Mail, Lock, User2, Phone } from "lucide-react";
+import { useEffect, useState, useCallback, useRef } from "react";
+import { Briefcase, GraduationCap, Building2, Loader2, Mail, Lock, User2, Phone, CheckCircle2, XCircle, AlertCircle } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { lovable } from "@/integrations/lovable";
@@ -39,6 +39,12 @@ function AuthPage() {
   const [cgpa, setCgpa] = useState("");
   const [companyName, setCompanyName] = useState("");
 
+  // Real-time validation state
+  const [emailStatus, setEmailStatus] = useState<"idle" | "checking" | "valid" | "invalid">("idle");
+  const [emailError, setEmailError] = useState("");
+  const [phoneError, setPhoneError] = useState("");
+  const emailCheckTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
   // Redirect signed-in users to their home
   useEffect(() => {
     if (!loading && user && role) {
@@ -46,54 +52,134 @@ function AuthPage() {
     }
   }, [loading, user, role, navigate]);
 
-  // --- Validation helpers ---
+  // ──────── Validation Constants ────────
   const BLOCKED_DOMAINS = [
     "mailinator.com", "guerrillamail.com", "tempmail.com", "throwaway.email",
     "yopmail.com", "trashmail.com", "sharklasers.com", "guerrillamailblock.com",
     "grr.la", "discard.email", "maildrop.cc", "10minutemail.com", "temp-mail.org",
-    "fakeinbox.com", "getnada.com", "demo.com",
+    "fakeinbox.com", "getnada.com", "demo.com", "test.com", "example.com",
   ];
 
-  const ALLOWED_PROVIDERS = [
-    "gmail.com", "yahoo.com", "outlook.com", "hotmail.com", "live.com",
-    "icloud.com", "protonmail.com", "proton.me", "rediffmail.com", "zoho.com",
-    "aol.com", "msn.com", "mail.com", "yandex.com", "tutanota.com",
-  ];
+  const DEMO_EMAILS = ["admin@demo.com", "recruiter@demo.com", "student@demo.com"];
 
+  // ──────── Name Validation ────────
   const isValidFullName = (n: string): boolean => {
     const trimmed = n.trim();
     if (trimmed.length < 3) return false;
     const parts = trimmed.split(/\s+/).filter((p) => p.length >= 2);
     if (parts.length < 2) return false;
-    // Only letters and spaces allowed
     if (!/^[a-zA-Z\s.'-]+$/.test(trimmed)) return false;
     return true;
   };
 
-  const isValidEmail = (e: string): { valid: boolean; reason?: string } => {
+  // ──────── Phone Validation (Indian) ────────
+  const validatePhone = (p: string): string | null => {
+    const cleaned = p.replace(/[\s\-()]/g, "");
+    if (!cleaned) return null; // optional if empty
+    // Remove +91 or 0 prefix
+    const num = cleaned.replace(/^(\+91|91|0)/, "");
+    if (num.length !== 10) return "Phone number must be 10 digits.";
+    if (!/^[6-9]\d{9}$/.test(num)) return "Enter a valid Indian mobile number (starts with 6-9).";
+    // Block obvious fakes
+    if (/^(\d)\1{9}$/.test(num)) return "Please enter a real phone number.";
+    if (num === "1234567890" || num === "9876543210" || num === "0000000000") return "Please enter a real phone number.";
+    return null;
+  };
+
+  const handlePhoneChange = (val: string) => {
+    // Only allow digits, +, spaces, hyphens
+    const filtered = val.replace(/[^\d+\s\-()]/g, "");
+    setPhone(filtered);
+    if (filtered.trim()) {
+      const err = validatePhone(filtered);
+      setPhoneError(err || "");
+    } else {
+      setPhoneError("");
+    }
+  };
+
+  // ──────── Email Validation (Local + API) ────────
+  const localEmailCheck = (e: string): { valid: boolean; reason?: string } => {
     const trimmed = e.trim().toLowerCase();
-    const domain = trimmed.split("@")[1];
+    if (!trimmed) return { valid: false, reason: "Email is required." };
+    // Basic format check
+    if (!/^[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}$/.test(trimmed)) {
+      return { valid: false, reason: "Enter a valid email address." };
+    }
+    const [localPart, domain] = trimmed.split("@");
     if (!domain) return { valid: false, reason: "Enter a valid email address." };
-
-    // Block disposable/test domains
+    // Block disposable domains
     if (BLOCKED_DOMAINS.includes(domain)) {
-      return { valid: false, reason: "Disposable or test email addresses are not allowed. Use your official email." };
+      return { valid: false, reason: "Disposable or test emails are not allowed. Use your real email." };
     }
-
-    // Allow official/company/edu domains + known providers
-    const isKnownProvider = ALLOWED_PROVIDERS.includes(domain);
-    const isOrgDomain = domain.endsWith(".edu") || domain.endsWith(".ac.in") || domain.endsWith(".edu.in") || domain.endsWith(".org") || domain.endsWith(".co.in") || domain.endsWith(".in") || domain.endsWith(".com");
-
-    if (!isKnownProvider && !isOrgDomain) {
-      return { valid: false, reason: "Please use a valid official or personal email address." };
+    // Block obviously fake local parts
+    if (/^(test|fake|dummy|asdf|qwer|abc|xyz|temp|none|no)\d*$/i.test(localPart)) {
+      return { valid: false, reason: "Please use your real email address, not a test one." };
     }
-
     return { valid: true };
   };
 
-  // Demo account emails (bypass validation for login only)
-  const DEMO_EMAILS = ["admin@demo.com", "recruiter@demo.com", "student@demo.com"];
+  // Real-time email verification via free Disify API
+  const verifyEmailReal = useCallback(async (emailAddr: string) => {
+    const local = localEmailCheck(emailAddr);
+    if (!local.valid) {
+      setEmailStatus("invalid");
+      setEmailError(local.reason || "Invalid email.");
+      return;
+    }
+    setEmailStatus("checking");
+    setEmailError("");
+    try {
+      const res = await fetch(`https://disify.com/api/email/${emailAddr.trim().toLowerCase()}`);
+      if (res.ok) {
+        const data = await res.json();
+        if (data.disposable) {
+          setEmailStatus("invalid");
+          setEmailError("Disposable emails are not allowed. Use your real email.");
+          return;
+        }
+        if (data.dns === false) {
+          setEmailStatus("invalid");
+          setEmailError("This email domain does not exist. Check for typos.");
+          return;
+        }
+        if (data.format === false) {
+          setEmailStatus("invalid");
+          setEmailError("Invalid email format.");
+          return;
+        }
+        setEmailStatus("valid");
+        setEmailError("");
+      } else {
+        // API down — fallback to local check only
+        setEmailStatus("valid");
+      }
+    } catch {
+      // Network error — fallback to local check
+      setEmailStatus("valid");
+    }
+  }, []);
 
+  // Debounced email check on change
+  const handleEmailChange = (val: string) => {
+    setEmail(val);
+    setEmailStatus("idle");
+    setEmailError("");
+    if (emailCheckTimer.current) clearTimeout(emailCheckTimer.current);
+    if (mode === "register" && val.includes("@") && val.includes(".")) {
+      emailCheckTimer.current = setTimeout(() => verifyEmailReal(val), 800);
+    }
+  };
+
+  // Also check on blur
+  const handleEmailBlur = () => {
+    if (mode === "register" && email.includes("@")) {
+      if (emailCheckTimer.current) clearTimeout(emailCheckTimer.current);
+      verifyEmailReal(email);
+    }
+  };
+
+  // ──────── Login Handler ────────
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setSubmitting(true);
@@ -107,8 +193,8 @@ function AuthPage() {
       return;
     }
     // Check email verification (skip for demo accounts)
-    const user = authResult.data.user;
-    if (user && !user.email_confirmed_at && !DEMO_EMAILS.includes(email.trim().toLowerCase())) {
+    const u = authResult.data.user;
+    if (u && !u.email_confirmed_at && !DEMO_EMAILS.includes(email.trim().toLowerCase())) {
       await supabase.auth.signOut();
       toast.error("Please verify your email before signing in. Check your inbox for the confirmation link.");
       return;
@@ -116,6 +202,7 @@ function AuthPage() {
     toast.success("Welcome back!");
   };
 
+  // ──────── Register Handler ────────
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -125,11 +212,30 @@ function AuthPage() {
       return;
     }
 
-    // Validate email
-    const emailCheck = isValidEmail(email);
-    if (!emailCheck.valid) {
-      toast.error(emailCheck.reason!);
+    // Validate email locally
+    const localCheck = localEmailCheck(email);
+    if (!localCheck.valid) {
+      toast.error(localCheck.reason!);
       return;
+    }
+
+    // Block if email check is still running or failed
+    if (emailStatus === "checking") {
+      toast.error("Please wait — we're verifying your email address.");
+      return;
+    }
+    if (emailStatus === "invalid") {
+      toast.error(emailError || "Please use a valid, real email address.");
+      return;
+    }
+
+    // Validate phone
+    if (phone.trim()) {
+      const phoneErr = validatePhone(phone);
+      if (phoneErr) {
+        toast.error(phoneErr);
+        return;
+      }
     }
 
     if (password.length < 6) {
@@ -140,7 +246,7 @@ function AuthPage() {
     const metadata: Record<string, string> = {
       name: name.trim(),
       role: selectedRole,
-      phone,
+      phone: phone.replace(/[\s\-()]/g, "").replace(/^(\+91|91|0)/, ""),
     };
     if (selectedRole === "student") {
       metadata.department = department;
@@ -166,7 +272,7 @@ function AuthPage() {
       toast.error(authResult.error.message);
       return;
     }
-    toast.success("Account created! Please check your email to verify before signing in.", { duration: 6000 });
+    toast.success("Account created! Check your email inbox and click the verification link before signing in.", { duration: 8000 });
     setMode("login");
   };
 
@@ -293,14 +399,33 @@ function AuthPage() {
 
             <form onSubmit={mode === "login" ? handleLogin : handleRegister} className="space-y-3">
               {mode === "register" && (
-                <Field icon={User2} placeholder="Full name" value={name} onChange={setName} required />
+                <Field icon={User2} placeholder="Full name (e.g. Ashwin P)" value={name} onChange={setName} required />
               )}
-              <Field icon={Mail} type="email" placeholder="Email address" value={email} onChange={setEmail} required />
+              <div>
+                <Field icon={Mail} type="email" placeholder="Email address" value={email} onChange={handleEmailChange} onBlur={handleEmailBlur} required />
+                {mode === "register" && emailStatus !== "idle" && (
+                  <div className={`flex items-center gap-1.5 mt-1.5 text-xs font-medium ${
+                    emailStatus === "checking" ? "text-amber-500" :
+                    emailStatus === "valid" ? "text-emerald-600" : "text-red-500"
+                  }`}>
+                    {emailStatus === "checking" && <><Loader2 className="h-3 w-3 animate-spin" /> Verifying email...</>}
+                    {emailStatus === "valid" && <><CheckCircle2 className="h-3 w-3" /> Email verified</>}
+                    {emailStatus === "invalid" && <><XCircle className="h-3 w-3" /> {emailError}</>}
+                  </div>
+                )}
+              </div>
               <Field icon={Lock} type="password" placeholder="Password" value={password} onChange={setPassword} required minLength={mode === "register" ? 6 : undefined} />
 
               {mode === "register" && (
                 <>
-                  <Field icon={Phone} placeholder="Phone (optional)" value={phone} onChange={setPhone} />
+                  <div>
+                    <Field icon={Phone} placeholder="Phone number (e.g. 9876543210)" value={phone} onChange={handlePhoneChange} />
+                    {phoneError && (
+                      <div className="flex items-center gap-1.5 mt-1.5 text-xs font-medium text-red-500">
+                        <AlertCircle className="h-3 w-3" /> {phoneError}
+                      </div>
+                    )}
+                  </div>
                   {selectedRole === "student" && (
                     <div className="grid grid-cols-2 gap-3">
                       <Field placeholder="Department (CSE, ECE...)" value={department} onChange={setDepartment} />
@@ -334,13 +459,14 @@ function AuthPage() {
 }
 
 function Field({
-  icon: Icon, type = "text", placeholder, value, onChange, required, minLength,
+  icon: Icon, type = "text", placeholder, value, onChange, onBlur, required, minLength,
 }: {
   icon?: React.ComponentType<{ className?: string }>;
   type?: string;
   placeholder: string;
   value: string;
   onChange: (v: string) => void;
+  onBlur?: () => void;
   required?: boolean;
   minLength?: number;
 }) {
@@ -352,6 +478,7 @@ function Field({
         placeholder={placeholder}
         value={value}
         onChange={(e) => onChange(e.target.value)}
+        onBlur={onBlur}
         required={required}
         minLength={minLength}
         className={`w-full rounded-xl border border-border bg-background px-3 ${Icon ? "pl-9" : ""} py-2.5 text-sm placeholder:text-muted-foreground/70 focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition`}
